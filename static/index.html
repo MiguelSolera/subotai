@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUBOTAI - Comparador</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #333;
+            font-size: 13px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 97vh;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        /* HEADER COMPACTO */
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 10px 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        
+        .header h1 {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 0;
+            flex-shrink: 0;
+        }
+        
+        .api-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .api-label {
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .provider-select {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.85em;
+            outline: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 150px;
+        }
+        
+        .provider-select option {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .api-key-input {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.85em;
+            width: 220px;
+            outline: none;
+            border-radius: 5px;
+        }
+        
+        .api-key-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .connect-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .connect-btn:hover {
+            background: #7f8c8d;
+        }
+        
+        .connect-btn.connected {
+            background: #27ae60;
+        }
+        
+        .connect-btn.connected:hover {
+            background: #219a52;
+        }
+        
+        .connect-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .connection-status {
+            font-size: 0.85em;
+            padding: 5px 12px;
+            border-radius: 5px;
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .connection-status.connected {
+            background: rgba(39, 174, 96, 0.2);
+            color: #27ae60;
+        }
+        
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        /* PANEL LATERAL CON SISTEMAS + MÉTRICAS */
+        .systems-panel {
+            width: 180px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            padding: 15px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        
+        .systems-title {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            border-bottom: 1px solid #3498db;
+            padding-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        /* FILAS DE SISTEMAS ACTIVOS */
+        .system-row {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 5px;
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border-left: 2px solid #27ae60;
+        }
+        
+        .system-icon {
+            font-size: 0.9em;
+            margin-right: 6px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .system-name {
+            flex: 1;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .system-status {
+            font-size: 0.7em;
+            font-weight: bold;
+            color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        /* SEPARADOR */
+        .section-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 12px 0;
+        }
+        
+        /* TÍTULO MÉTRICAS */
+        .metrics-title {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        /* FILAS DE MÉTRICAS */
+        .metric-row {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 5px;
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border-left: 2px solid #3498db;
+        }
+        
+        .metric-icon {
+            font-size: 0.9em;
+            margin-right: 6px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .metric-name {
+            flex: 1;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .metric-value {
+            font-size: 0.75em;
+            font-weight: bold;
+            color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            min-width: 35px;
+            text-align: center;
+        }
+        
+        /* PANEL COMPARACIÓN */
+        .comparison-panel {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+        
+        .comparison-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e9ecef;
+        }
+        
+        .comparison-column:last-child {
+            border-right: none;
+        }
+        
+        .column-header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            font-size: 0.95em;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .response-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            line-height: 1.5;
+        }
+        
+        .response-box {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 100%;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            font-size: 0.85em;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .chat-message {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 4px 0;
+        }
+        
+        .user-message {
+            background: #e3f2fd;
+            align-self: flex-end;
+            max-width: 80%;
+            border-left: 3px solid #2196f3;
+        }
+        
+        .ai-message {
+            background: #f5f5f5;
+            align-self: flex-start;
+            max-width: 90%;
+            border-left: 3px solid #4caf50;
+            white-space: pre-wrap;
+            position: relative;
+        }
+        
+        .analysis-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.75em;
+            transition: background 0.2s;
+        }
+        
+        .analysis-btn:hover {
+            background: #2980b9;
+        }
+        
+        /* Modal para análisis */
+        .analysis-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        
+        .analysis-modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 900px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .analysis-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .analysis-modal-header h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .close-modal {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close-modal:hover {
+            color: #000;
+        }
+        
+        .analysis-section {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .analysis-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .analysis-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .metric-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .metric-box .label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .metric-box .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        /* INPUT COMPACTO */
+        .input-panel {
+            background: #34495e;
+            padding: 12px 20px;
+            border-top: 1px solid #3498db;
+            flex-shrink: 0;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .query-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .send-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: background 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        
+        .send-btn:hover {
+            background: #219a52;
+        }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 3px;
+        }
+        
+        /* Colores para RAG */
+        .normal-text {
+            color: #2c3e50; /* Gris oscuro - verificado */
+        }
+
+        .blue-text {
+            color: #2980b9; /* Azul - complementario */
+        }
+
+        .red-text {
+            color: #c0392b; /* Rojo - no verificado */
+            border-left: 2px solid #c0392b;
+            padding-left: 8px;
+            margin: 5px 0;
+        }
+        
+        /* Colores para el chat derecho */
+        .verified-text {
+            color: #2c3e50; /* Gris oscuro - información VERIFICADA */
+            font-weight: 500;
+        }
+
+        .complementary-text {
+            color: #2980b9; /* Azul - información COMPLEMENTARIA */
+            font-style: italic;
+        }
+
+        .unverified-text {
+            color: #c0392b; /* Rojo - información NO VERIFICADA */
+            border-left: 3px solid #e74c3c;
+            padding-left: 10px;
+            margin: 8px 0;
+            background-color: #fdf2f2;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: block;
+        }
+        
+        /* Selector de idioma */
+        .lang-selector {
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: transform 0.2s;
+        }
+        
+        .lang-selector:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Modal de idiomas */
+        .lang-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .lang-modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .lang-modal-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        .lang-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .lang-item:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.1);
+        }
+        
+        .lang-flag {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .lang-code {
+            font-size: 0.7em;
+            color: #666;
+        }
+        
+        /* Modal de carga de documentos */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: #1a1a2e;
+            border: 2px solid #16213e;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 100px auto;
+            box-shadow: 0 10px 50px rgba(0, 217, 255, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER COMPACTO -->
+        <div class="header">
+            <h1>🛡️ SUBOTAI - Comparador ChatGPT vs Respuestas Verificadas</h1>
+            
+            <div class="api-controls">
+                <span class="api-label">Proveedor</span>
+                <select class="provider-select" id="providerSelect" onchange="updateRawResponseHeader(this.value)">
+                    <option value="openai">OpenAI (GPT)</option>
+                    <option value="deepseek">DeepSeek</option>
+                </select>
+                <span class="api-label" style="margin-left: 10px;">API Key</span>
+                <input type="password" 
+                       class="api-key-input" 
+                       id="apiKeyInput"
+                       placeholder="Introduce tu API Key">
+                <button class="connect-btn" id="connectBtn" 
+                        onclick="handleConnectionToggle()"
+                        onmouseenter="handleButtonHover(true)"
+                        onmouseleave="handleButtonHover(false)">Conectar</button>
+            </div>
+        </div>
+        
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-content">
+            <!-- PANEL LATERAL -->
+            <div class="systems-panel">
+                <div class="system-row">
+                    <div class="system-icon" id="internalDbIcon" style="cursor: pointer;" title="Cargar documentos">📖</div>
+                    <div class="system-name" id="internalDbName" style="cursor: pointer;" title="Cargar documentos">Internal DB</div>
+                    <div class="system-status lang-selector" id="currentLangFlag" data-lang="es" onclick="openLangModal()">🇪🇸</div>
+                </div>
+            </div>
+            
+            <!-- PANEL COMPARACIÓN -->
+            <div class="comparison-panel">
+                <!-- CHATGPT -->
+                <div class="comparison-column">
+                    <div class="column-header" id="rawResponseHeader">
+                        🔓 OpenAI - Respuesta sin filtro
+                    </div>
+                    <div class="response-area">
+                        <div class="response-box" id="chatgptResponse">
+                            <div class="ai-message">💡 Haz una pregunta para comparar...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SUBOTAI -->
+                <div class="comparison-column">
+                    <div class="column-header">
+                        🛡️ SUBOTAI - Respuesta Verificada
+                    </div>
+                    <div class="response-area">
+                        <div class="response-box" id="subotaiResponse">
+                            <div class="ai-message">🛡️ Esperando tu pregunta...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- INPUT COMPACTO -->
+        <div class="input-panel">
+            <div class="input-group">
+                <input type="text" class="query-input" id="queryInput" 
+                       placeholder="Escribe tu pregunta aquí..."
+                       onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendQuery()">🔄 Comparar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Análisis -->
+    <div id="analysisModal" class="analysis-modal">
+        <div class="analysis-modal-content">
+            <div class="analysis-modal-header">
+                <h2>🔍 Análisis SUBOTAI</h2>
+                <span class="close-modal" onclick="closeAnalysisModal()">&times;</span>
+            </div>
+            <div id="analysisContent">
+                <!-- Se llenará dinámicamente con JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables para manejar el estado del botón
+        let isConnected = false;
+        
+        // Actualizar header de respuesta cruda con el proveedor
+        function updateRawResponseHeader(provider) {
+            const header = document.getElementById('rawResponseHeader');
+            const providerNames = {
+                'openai': 'OpenAI',
+                'deepseek': 'DeepSeek'
+            };
+            const providerName = providerNames[provider] || 'OpenAI';
+            header.textContent = `🔓 ${providerName} - Respuesta sin filtro`;
+        }
+        
+        // Manejar toggle entre conectar/desconectar
+        function handleConnectionToggle() {
+            const connectBtn = document.getElementById('connectBtn');
+            
+            if (connectBtn.classList.contains('connected')) {
+                // Si está conectado, desconectar
+                disconnectAPI();
+            } else {
+                // Si está desconectado, conectar
+                connectAPI();
+            }
+        }
+        
+        // Manejar hover del botón
+        function handleButtonHover(isHovering) {
+            const connectBtn = document.getElementById('connectBtn');
+            
+            // Solo cambiar texto si está conectado
+            if (connectBtn.classList.contains('connected')) {
+                if (isHovering) {
+                    connectBtn.textContent = 'Desconectar?';
+                } else {
+                    connectBtn.textContent = 'Conectado';
+                }
+            }
+        }
+        
+        // API Key Management (localStorage)
+        async function connectAPI() {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            const provider = document.getElementById('providerSelect').value;
+            const connectBtn = document.getElementById('connectBtn');
+            
+            if (!apiKey) {
+                alert('Por favor, introduce una API Key');
+                return;
+            }
+            
+            // Mostrar estado de carga
+            connectBtn.textContent = 'Validando...';
+            connectBtn.disabled = true;
+            
+            try {
+                // Validar la API Key antes de guardarla
+                const response = await fetch('http://localhost:8000/api/validate-key', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        api_key: apiKey,
+                        provider: provider
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.valid) {
+                    // Guardar proveedor y API Key en localStorage
+                    localStorage.setItem('subotai_api_key', apiKey);
+                    localStorage.setItem('subotai_provider', provider);
+                    
+                    // Cambiar estado del botón a conectado
+                    connectBtn.textContent = 'Conectado';
+                    connectBtn.classList.add('connected');
+                    connectBtn.disabled = false;
+                    
+                    // Actualizar header de respuesta cruda con el proveedor
+                    updateRawResponseHeader(provider);
+                } else {
+                    // API Key inválida
+                    alert('❌ API Key inválida. Por favor, verifica tu clave.');
+                    connectBtn.textContent = 'Conectar';
+                    connectBtn.classList.remove('connected');
+                    connectBtn.disabled = false;
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error.message);
+                connectBtn.textContent = 'Conectar';
+                connectBtn.classList.remove('connected');
+                connectBtn.disabled = false;
+            }
+        }
+
+        async function disconnectAPI() {
+            // Limpiar localStorage
+            localStorage.removeItem('subotai_api_key');
+            localStorage.removeItem('subotai_provider');
+            
+            // Restablecer campos
+            document.getElementById('apiKeyInput').value = '';
+            document.getElementById('providerSelect').value = 'openai';
+            
+            // Restablecer botón a estado desconectado
+            const connectBtn = document.getElementById('connectBtn');
+            connectBtn.textContent = 'Conectar';
+            connectBtn.classList.remove('connected');
+            
+            // Restablecer header a OpenAI por defecto
+            updateRawResponseHeader('openai');
+        }
+
+        async function checkConnectionStatus() {
+            const apiKey = localStorage.getItem('subotai_api_key');
+            const provider = localStorage.getItem('subotai_provider');
+            const connectBtn = document.getElementById('connectBtn');
+            
+            if (apiKey && provider) {
+                // Restaurar valores en los campos
+                document.getElementById('apiKeyInput').value = apiKey;
+                document.getElementById('providerSelect').value = provider;
+                
+                try {
+                    // Validar si la API Key sigue siendo válida
+                    const response = await fetch('http://localhost:8000/api/validate-key', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            api_key: apiKey,
+                            provider: provider
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.valid) {
+                        // Si es válida, mostrar como conectado
+                        connectBtn.textContent = 'Conectado';
+                        connectBtn.classList.add('connected');
+                        
+                        // Actualizar header con el proveedor guardado
+                        updateRawResponseHeader(provider);
+                    } else {
+                        // Si no es válida, limpiar y desconectar
+                        localStorage.removeItem('subotai_api_key');
+                        localStorage.removeItem('subotai_provider');
+                        connectBtn.textContent = 'Conectar';
+                        connectBtn.classList.remove('connected');
+                        
+                        // Restablecer header a OpenAI por defecto
+                        updateRawResponseHeader('openai');
+                    }
+                } catch (error) {
+                    // Si hay error de red, limpiar
+                    console.error('Error validando API Key:', error);
+                    localStorage.removeItem('subotai_api_key');
+                    localStorage.removeItem('subotai_provider');
+                    connectBtn.textContent = 'Conectar';
+                    connectBtn.classList.remove('connected');
+                    
+                    // Restablecer header a OpenAI por defecto
+                    updateRawResponseHeader('openai');
+                }
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendQuery();
+        }
+        
+        function loadExample(example) {
+            document.getElementById('queryInput').value = example;
+            sendQuery();
+        }
+        
+        async function sendQuery() {
+            const input = document.getElementById('queryInput');
+            const query = input.value.trim();
+            if (!query) return;
+            
+            const apiKey = localStorage.getItem('subotai_api_key');
+            const provider = localStorage.getItem('subotai_provider') || 'openai';
+            
+            if (!apiKey) {
+                alert('Por favor, conecta tu API Key primero');
+                return;
+            }
+            
+            // Añadir mensaje del usuario a ambos chats
+            addUserMessage(query);
+            input.value = '';
+            resetMetrics();
+            
+            // Añadir indicadores de carga
+            const loadingChatGPT = addAIMessage('chatgptResponse', '🔄 Consultando...', true);
+            const loadingSubotai = addAIMessage('subotaiResponse', '🔄 Procesando...', true);
+            
+            try {
+                // Obtener idioma de los documentos
+                const docsLanguage = localStorage.getItem('documents_language') || 'es';
+                
+                // ✅ CARGAR DOCUMENTOS DEL USUARIO
+                const userDocuments = loadUserDocuments();
+                
+                // Llamada 1: LLM directo (crudo)
+                const rawPromise = fetch('http://localhost:8000/api/query-raw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                        'X-Provider': provider,
+                        'X-Documents-Language': docsLanguage
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        user_documents: userDocuments  // ✅ AÑADIDO
+                    })
+                });
+                
+                // Llamada 2: SUBOTAI verificado con RAG
+                const subotaiPromise = fetch('http://localhost:8000/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                        'X-Provider': provider,
+                        'X-Documents-Language': docsLanguage
+                    },
+                    body: JSON.stringify({
+                        query: query, 
+                        mode: 'auto',
+                        user_documents: userDocuments  // ✅ AÑADIDO
+                    })
+                });
+                
+                // Esperar ambas respuestas
+                const [rawResponse, subotaiResponse] = await Promise.all([rawPromise, subotaiPromise]);
+                const rawData = await rawResponse.json();
+                const subotaiData = await subotaiResponse.json();
+                
+                // Remover indicadores de carga
+                loadingChatGPT.remove();
+                loadingSubotai.remove();
+                
+                // Mostrar respuestas
+                addAIMessage('chatgptResponse', rawData.response || rawData.error || 'Sin respuesta', false);
+                addAIMessage('subotaiResponse', subotaiData.response || subotaiData.error || 'Sin respuesta', false, subotaiData.metadata, query);
+                
+                if (subotaiData.metadata) updateMetrics(subotaiData.metadata);
+                
+            } catch (error) {
+                loadingChatGPT.remove();
+                loadingSubotai.remove();
+                addAIMessage('chatgptResponse', '❌ Error: ' + error.message);
+                addAIMessage('subotaiResponse', '❌ Error: ' + error.message);
+            }
+        }
+        
+        function addUserMessage(text) {
+            const chatgptBox = document.getElementById('chatgptResponse');
+            const subotaiBox = document.getElementById('subotaiResponse');
+            
+            const msg1 = document.createElement('div');
+            msg1.className = 'chat-message user-message';
+            msg1.textContent = text;
+            chatgptBox.appendChild(msg1);
+            
+            const msg2 = document.createElement('div');
+            msg2.className = 'chat-message user-message';
+            msg2.textContent = text;
+            subotaiBox.appendChild(msg2);
+            
+            chatgptBox.scrollTop = chatgptBox.scrollHeight;
+            subotaiBox.scrollTop = subotaiBox.scrollHeight;
+        }
+        
+        // Contador para IDs únicos de análisis
+        let analysisCounter = 0;
+        const analysisData = {};
+        
+        // Función para aplicar colores a las respuestas del chat derecho
+        function applyResponseColors(responseText) {
+            let html = responseText;
+            
+            // Reemplazar tags por spans con clases CSS
+            html = html.replace(/\[NORMAL\](.*?)\[\/NORMAL\]/gs, '<span class="verified-text">$1</span>');
+            html = html.replace(/\[AZUL\](.*?)\[\/AZUL\]/gs, '<span class="complementary-text">$1</span>');
+            html = html.replace(/\[ROJO\](.*?)\[\/ROJO\]/gs, '<span class="unverified-text">$1</span>');
+            
+            return html;
+        }
+        
+        function addAIMessage(containerId, text, isLoading = false, metadata = null, query = null) {
+            const container = document.getElementById(containerId);
+            const msg = document.createElement('div');
+            msg.className = 'chat-message ai-message';
+            
+            // Si es el chat verificado (subotaiResponse), aplicar colores
+            if (containerId === 'subotaiResponse') {
+                msg.innerHTML = applyResponseColors(text);
+            } else {
+                msg.textContent = text;
+            }
+            
+            if (isLoading) msg.dataset.loading = 'true';
+            
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+            return msg;
+        }
+        
+        
+        function updateMetrics(metadata) {
+            // Métricas del sidebar eliminadas - función vacía para compatibilidad
+        }
+        
+        function resetMetrics() {
+            // Métricas del sidebar eliminadas - función vacía para compatibilidad
+        }
+        
+        // Funciones para el modal de análisis
+        function openAnalysisModal(analysisId) {
+            const data = analysisData[analysisId];
+            if (!data) return;
+            
+            const content = generateAnalysisHTML(data);
+            document.getElementById('analysisContent').innerHTML = content;
+            document.getElementById('analysisModal').style.display = 'block';
+        }
+        
+        function closeAnalysisModal() {
+            document.getElementById('analysisModal').style.display = 'none';
+        }
+        
+        function generateAnalysisHTML(data) {
+            const { query, response, metadata } = data;
+            
+            let html = `
+                <div class="analysis-section">
+                    <h3>📝 Pregunta</h3>
+                    <p>${query}</p>
+                </div>
+                
+                <div class="analysis-section">
+                    <h3>✅ Respuesta Verificada</h3>
+                    <p style="white-space: pre-wrap;">${response}</p>
+                </div>
+            `;
+            
+            // Métricas de calidad
+            if (metadata.quality_metrics) {
+                const qm = metadata.quality_metrics;
+                html += `
+                    <div class="analysis-section">
+                        <h3>📊 Métricas de Calidad</h3>
+                        <div class="analysis-metrics">
+                            <div class="metric-box">
+                                <div class="label">Truth Risk</div>
+                                <div class="value">${Math.round(qm.truth_risk || 0)}%</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="label">Clarity Score</div>
+                                <div class="value">${Math.round(qm.clarity_score || 0)}%</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="label">Quality Score</div>
+                                <div class="value">${Math.round(qm.response_quality_score || 0)}%</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="label">Execution Score</div>
+                                <div class="value">${Math.round(qm.execution_score || 0)}%</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="label">Strategy Score</div>
+                                <div class="value">${Math.round(qm.strategy_score || 0)}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Truth Shield
+            if (metadata.truth_shield) {
+                const ts = metadata.truth_shield;
+                html += `
+                    <div class="analysis-section">
+                        <h3>🛡️ Truth Shield</h3>
+                        <p><strong>Risk Level:</strong> ${ts.risk_level}</p>
+                        <p><strong>Risk Score:</strong> ${Math.round(ts.risk_score || 0)}%</p>
+                        <p><strong>Requires Correction:</strong> ${ts.requires_correction ? '⚠️ Yes' : '✅ No'}</p>
+                        ${ts.questionable_claims && ts.questionable_claims.length > 0 ? 
+                            `<p><strong>Questionable Claims:</strong> ${ts.questionable_claims.join(', ')}</p>` : ''}
+                    </div>
+                `;
+            }
+            
+            // Quality Gate
+            if (metadata.quality_gate) {
+                const qg = metadata.quality_gate;
+                html += `
+                    <div class="analysis-section">
+                        <h3>🎯 Quality Gate</h3>
+                        <p><strong>Status:</strong> ${qg.passed ? '✅ PASSED' : '❌ FAILED'}</p>
+                        <p><strong>Gate Result:</strong> ${qg.gate_result}</p>
+                        <p><strong>Recovery Mode:</strong> ${qg.recovery_mode}</p>
+                        ${qg.blocked ? '<p><strong>⚠️ Response was blocked</strong></p>' : ''}
+                        ${qg.message ? `<p><strong>Message:</strong> ${qg.message}</p>` : ''}
+                    </div>
+                `;
+            }
+            
+            // Reasoning Mode
+            if (metadata.reasoning_mode) {
+                const rm = metadata.reasoning_mode;
+                html += `
+                    <div class="analysis-section">
+                        <h3>🧠 Reasoning Mode</h3>
+                        <p><strong>Current Mode:</strong> ${rm.current_mode.toUpperCase()}</p>
+                        <p><strong>Trigger Reason:</strong> ${rm.trigger_reason}</p>
+                        <p><strong>Confidence:</strong> ${Math.round(rm.confidence * 100)}%</p>
+                        ${rm.rules_applied && rm.rules_applied.length > 0 ? 
+                            `<p><strong>Rules Applied:</strong> ${rm.rules_applied.join(', ')}</p>` : ''}
+                    </div>
+                `;
+            }
+            
+            return html;
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('analysisModal');
+            if (event.target == modal) {
+                closeAnalysisModal();
+            }
+        };
+        
+        // Verificar estado al cargar
+        window.onload = function() {
+            checkConnectionStatus();
+        };
+        
+        // ==================== SELECTOR DE IDIOMA ====================
+        function openLangModal() {
+            document.getElementById('langModal').style.display = 'flex';
+        }
+        
+        function closeLangModal() {
+            document.getElementById('langModal').style.display = 'none';
+        }
+        
+        function selectLanguage(flag, langCode) {
+            // Actualizar la bandera en el botón
+            const currentLangFlag = document.getElementById('currentLangFlag');
+            currentLangFlag.textContent = flag;
+            currentLangFlag.setAttribute('data-lang', langCode);
+            
+            // Guardar en localStorage (idioma de los documentos de la BD)
+            localStorage.setItem('documents_language', langCode);
+            localStorage.setItem('selectedLanguageFlag', flag);
+            
+            // Cerrar el modal
+            closeLangModal();
+            
+            console.log('📖 Idioma de documentos BD seleccionado:', langCode, flag);
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('langModal');
+            if (event.target === modal) {
+                closeLangModal();
+            }
+        }
+        
+        // Cargar idioma guardado al iniciar
+        window.addEventListener('load', function() {
+            const savedLang = localStorage.getItem('documents_language');
+            const savedFlag = localStorage.getItem('selectedLanguageFlag');
+            if (savedLang && savedFlag) {
+                const currentLangFlag = document.getElementById('currentLangFlag');
+                currentLangFlag.textContent = savedFlag;
+                currentLangFlag.setAttribute('data-lang', savedLang);
+            }
+        });
+
+        // ============================================
+        // SISTEMA DE CARGA DE DOCUMENTOS
+        // ============================================
+        
+        function showUploadModal() {
+            console.log('🔔 showUploadModal() llamado');
+            const modal = document.getElementById('uploadModal');
+            if (modal) {
+                modal.style.display = 'block';
+                console.log('✅ Modal mostrado');
+            } else {
+                console.error('❌ No se encontró el modal con ID "uploadModal"');
+            }
+        }
+        
+        function hideUploadModal() {
+            console.log('🔔 hideUploadModal() llamado');
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('fileInput').value = ''; // Limpiar input
+            document.getElementById('uploadStatus').style.display = 'none';
+        }
+        
+        // Añadir event listeners cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Configurando event listeners para Internal DB');
+            
+            const dbIcon = document.getElementById('internalDbIcon');
+            const dbName = document.getElementById('internalDbName');
+            
+            if (dbIcon) {
+                dbIcon.addEventListener('click', function(e) {
+                    console.log('🖱️ Click en icono Internal DB');
+                    e.stopPropagation();
+                    showUploadModal();
+                });
+                console.log('✅ Event listener añadido a icono');
+            } else {
+                console.error('❌ No se encontró elemento con ID "internalDbIcon"');
+            }
+            
+            if (dbName) {
+                dbName.addEventListener('click', function(e) {
+                    console.log('🖱️ Click en nombre Internal DB');
+                    e.stopPropagation();
+                    showUploadModal();
+                });
+                console.log('✅ Event listener añadido a nombre');
+            } else {
+                console.error('❌ No se encontró elemento con ID "internalDbName"');
+            }
+        });
+        
+        async function processUploadedFiles() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            if (files.length === 0) {
+                uploadStatus.style.display = 'block';
+                uploadStatus.style.color = '#f00';
+                uploadStatus.textContent = '⚠️ Por favor, selecciona al menos un archivo';
+                return;
+            }
+            
+            uploadStatus.style.display = 'block';
+            uploadStatus.style.color = '#00d9ff';
+            uploadStatus.textContent = '📥 Cargando archivos...';
+            
+            const documents = [];
+            
+            try {
+                for (let file of files) {
+                    const content = await readFileContent(file);
+                    documents.push({
+                        name: file.name,
+                        content: content,
+                        type: file.type || 'text/plain',
+                        size: file.size,
+                        uploaded_at: new Date().toISOString()
+                    });
+                }
+                
+                saveDocumentsToLocalStorage(documents);
+                
+                uploadStatus.style.color = '#0f0';
+                uploadStatus.textContent = `✅ ${documents.length} documento(s) cargado(s) exitosamente`;
+                
+                setTimeout(() => {
+                    hideUploadModal();
+                }, 2000);
+                
+            } catch (error) {
+                uploadStatus.style.color = '#f00';
+                uploadStatus.textContent = `❌ Error al cargar archivos: ${error.message}`;
+            }
+        }
+        
+        function readFileContent(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(new Error('Error al leer el archivo'));
+                reader.readAsText(file);
+            });
+        }
+        
+        function saveDocumentsToLocalStorage(documents) {
+            const userDocs = {
+                timestamp: Date.now(),
+                documents: documents
+            };
+            localStorage.setItem('subotai_user_docs', JSON.stringify(userDocs));
+            console.log(`📁 Guardados ${documents.length} documentos en localStorage`);
+        }
+        
+        function loadUserDocuments() {
+            try {
+                const saved = localStorage.getItem('subotai_user_docs');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    console.log(`📁 Cargados ${parsed.documents.length} documentos de localStorage`);
+                    return parsed.documents;
+                }
+            } catch (error) {
+                console.error('Error al cargar documentos:', error);
+            }
+            return [];
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('uploadModal');
+            if (event.target === modal) {
+                hideUploadModal();
+            }
+        }
+    </script>
+    
+    <!-- Modal de selección de idioma -->
+    <div id="langModal" class="lang-modal">
+        <div class="lang-modal-content">
+            <div class="lang-modal-header">🌍 Selecciona tu idioma</div>
+            <div class="lang-grid">
+                <div class="lang-item" onclick="selectLanguage('🇪🇸', 'es')">
+                    <div class="lang-flag">🇪🇸</div>
+                    <div class="lang-code">ES</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇬🇧', 'en')">
+                    <div class="lang-flag">🇬🇧</div>
+                    <div class="lang-code">EN</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇨🇳', 'zh')">
+                    <div class="lang-flag">🇨🇳</div>
+                    <div class="lang-code">ZH</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇫🇷', 'fr')">
+                    <div class="lang-flag">🇫🇷</div>
+                    <div class="lang-code">FR</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇩🇪', 'de')">
+                    <div class="lang-flag">🇩🇪</div>
+                    <div class="lang-code">DE</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇮🇹', 'it')">
+                    <div class="lang-flag">🇮🇹</div>
+                    <div class="lang-code">IT</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇵🇹', 'pt')">
+                    <div class="lang-flag">🇵🇹</div>
+                    <div class="lang-code">PT</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇷🇺', 'ru')">
+                    <div class="lang-flag">🇷🇺</div>
+                    <div class="lang-code">RU</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇯🇵', 'ja')">
+                    <div class="lang-flag">🇯🇵</div>
+                    <div class="lang-code">JA</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇰🇷', 'ko')">
+                    <div class="lang-flag">🇰🇷</div>
+                    <div class="lang-code">KO</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇸🇦', 'ar')">
+                    <div class="lang-flag">🇸🇦</div>
+                    <div class="lang-code">AR</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇮🇳', 'hi')">
+                    <div class="lang-flag">🇮🇳</div>
+                    <div class="lang-code">HI</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇹🇷', 'tr')">
+                    <div class="lang-flag">🇹🇷</div>
+                    <div class="lang-code">TR</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇳🇱', 'nl')">
+                    <div class="lang-flag">🇳🇱</div>
+                    <div class="lang-code">NL</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇸🇪', 'sv')">
+                    <div class="lang-flag">🇸🇪</div>
+                    <div class="lang-code">SV</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇵🇱', 'pl')">
+                    <div class="lang-flag">🇵🇱</div>
+                    <div class="lang-code">PL</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇻🇳', 'vi')">
+                    <div class="lang-flag">🇻🇳</div>
+                    <div class="lang-code">VI</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇹🇭', 'th')">
+                    <div class="lang-flag">🇹🇭</div>
+                    <div class="lang-code">TH</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇮🇩', 'id')">
+                    <div class="lang-flag">🇮🇩</div>
+                    <div class="lang-code">ID</div>
+                </div>
+                <div class="lang-item" onclick="selectLanguage('🇬🇷', 'el')">
+                    <div class="lang-flag">🇬🇷</div>
+                    <div class="lang-code">EL</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CARGA DE DOCUMENTOS -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #00d9ff; margin-bottom: 20px;">📁 Cargar mis documentos</h3>
+            
+            <div style="background: #16213e; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <input type="file" id="fileInput" multiple accept=".txt,.md" style="color: #fff; background: #0f3460; padding: 10px; border: 1px solid #00d9ff; border-radius: 5px; width: 100%; cursor: pointer;">
+                <p style="color: #aaa; font-size: 12px; margin-top: 10px;">Formatos aceptados: .txt, .md</p>
+            </div>
+            
+            <div style="background: #2a2a3e; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid #ffa500;">
+                <p style="color: #ffa500; font-size: 13px; margin: 0;">
+                    <strong>⚠️ IMPORTANTE:</strong> Los documentos se guardan solo en tu navegador (localStorage).<br>
+                    Se borrarán al cerrar la sesión o limpiar la caché.
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="processUploadedFiles()" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    ✅ Cargar documentos
+                </button>
+                <button onclick="hideUploadModal()" style="flex: 1; background: #444; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
+                    ❌ Cancelar
+                </button>
+            </div>
+            
+            <div id="uploadStatus" style="margin-top: 15px; color: #0f0; font-size: 13px; display: none;"></div>
+        </div>
+    </div>
+</body>
+</html>
